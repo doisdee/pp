@@ -1,30 +1,20 @@
 const express = require('express');
-const { QuickDB } = require('quick.db');
-const db = new QuickDB();
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+const allowedPCs = {
+  "johnson": "HASH123456"
+};
 
-app.post('/verificar', async (req, res) => {
-    const { hardware_id } = req.body;
-    if (!hardware_id) return res.status(400).json({ erro: 'Faltando hardware_id' });
-
-    const valor = await db.get(`registros.${hardware_id}`);
-    res.json({ encontrado: valor === 'Johnson' });
+app.get('/verify/:user/:hash', (req, res) => {
+  const { user, hash } = req.params;
+  if (allowedPCs[user] && allowedPCs[user] === hash) {
+    res.json({ status: 'valid' });
+  } else {
+    res.json({ status: 'invalid' });
+  }
 });
 
-app.post('/registrar', async (req, res) => {
-    const { hardware_id } = req.body;
-    if (!hardware_id) return res.status(400).json({ erro: 'Faltando hardware_id' });
-
-    await db.set(`registros.${hardware_id}`, 'Johnson');
-    res.json({ sucesso: true });
-});
-
-app.get('/', (req, res) => {
-    res.send('API ONLINE');
-});
-
-app.listen(process.env.PORT || 10000, () => {
-    console.log('API rodando');
+app.listen(PORT, () => {
+  console.log(`API running on port ${PORT}`);
 });
